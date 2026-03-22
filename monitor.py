@@ -15,7 +15,7 @@ MQTT_USER = os.getenv("MQTT_USER")
 MQTT_PASS = os.getenv("MQTT_PASS")
 
 DEVICE_NAME = os.getenv("DEVICE_NAME", "HA remote helper 01")
-SCRIPT_VERSION = "1.1.1"
+SCRIPT_VERSION = "1.1.2"
 
 def slugify(name):
     return re.sub(r'[^a-zA-Z0-9_-]', '_', name)
@@ -27,6 +27,7 @@ CLIENT_ID = f"emmc-monitor-{DEVICE_SLUG}"
 LWT_TOPIC = f"{DEVICE_SLUG}/status"
 LWT_PAYLOAD_ONLINE = "online"
 LWT_PAYLOAD_OFFLINE = "offline"
+PROGRAM_START_TIME = time.time()
 
 # -------------------- NETWORK --------------------
 def detect_real_interface():
@@ -128,29 +129,36 @@ def get_uptime_seconds():
     except:
         return None
 
+def get_program_uptime_seconds():
+    try:
+        return int(time.time() - PROGRAM_START_TIME)
+    except:
+        return None
+
 # -------------------- HOME ASSISTANT DISCOVERY --------------------
 def publish_discovery(client):
     # Core sensors
     sensors = {
-        "emmc_life": {"name":"eMMC Lifetime","unit_of_measurement":"%","device_class":None,"state_topic":f"{DEVICE_SLUG}/emmc/life"},
-        "disk_used": {"name":"Disk Used","unit_of_measurement":"%","device_class":"volume_storage","state_topic":f"{DEVICE_SLUG}/disk/used"},
-        "mem_used": {"name":"Memory Used","unit_of_measurement":"%","device_class":None,"state_topic":f"{DEVICE_SLUG}/mem/used"},
-        "mem_free": {"name":"Memory Free","unit_of_measurement":"MB","device_class":None,"state_topic":f"{DEVICE_SLUG}/mem/free"},
-        "cpu_temp": {"name":"CPU Temperature","unit_of_measurement":"°C","device_class":"temperature","state_topic":f"{DEVICE_SLUG}/cpu/temp"},
-        "cpu_freq": {"name":"CPU Frequency","unit_of_measurement":"MHz","device_class":"frequency","state_topic":f"{DEVICE_SLUG}/cpu/freq"},
-        "cpu_freq_min": {"name":"CPU Min Frequency","unit_of_measurement":"MHz","device_class":"frequency","state_topic":f"{DEVICE_SLUG}/cpu/freq_min"},
-        "cpu_freq_max": {"name":"CPU Max Frequency","unit_of_measurement":"MHz","device_class":"frequency","state_topic":f"{DEVICE_SLUG}/cpu/freq_max"},
+        "emmc_life": {"name":"eMMC Lifetime","unit_of_measurement":"%","device_class":None,"icon":"mdi:chip","state_topic":f"{DEVICE_SLUG}/emmc/life"},
+        "disk_used": {"name":"Disk Used","unit_of_measurement":"%","device_class":"volume_storage","icon":"mdi:harddisk","state_topic":f"{DEVICE_SLUG}/disk/used"},
+        "mem_used": {"name":"Memory Used","unit_of_measurement":"%","device_class":None,"icon":"mdi:memory","state_topic":f"{DEVICE_SLUG}/mem/used"},
+        "mem_free": {"name":"Memory Free","unit_of_measurement":"MB","device_class":None,"icon":"mdi:memory","state_topic":f"{DEVICE_SLUG}/mem/free"},
+        "cpu_temp": {"name":"CPU Temperature","unit_of_measurement":"°C","device_class":"temperature","icon":"mdi:thermometer","state_topic":f"{DEVICE_SLUG}/cpu/temp"},
+        "cpu_freq": {"name":"CPU Frequency","unit_of_measurement":"MHz","device_class":"frequency","icon":"mdi:speedometer","state_topic":f"{DEVICE_SLUG}/cpu/freq"},
+        "cpu_freq_min": {"name":"CPU Min Frequency","unit_of_measurement":"MHz","device_class":"frequency","icon":"mdi:speedometer-slow","state_topic":f"{DEVICE_SLUG}/cpu/freq_min"},
+        "cpu_freq_max": {"name":"CPU Max Frequency","unit_of_measurement":"MHz","device_class":"frequency","icon":"mdi:speedometer-medium","state_topic":f"{DEVICE_SLUG}/cpu/freq_max"},
     }
 
     # Diagnostic sensors
     diagnostics = {
-        "host_ip": {"name":"Host IP","device_class":None,"state_topic":f"{DEVICE_SLUG}/host/ip","entity_category":"diagnostic"},
-        "uptime": {"name":"Uptime","unit_of_measurement":"s","device_class":"duration","state_topic":f"{DEVICE_SLUG}/system/uptime","entity_category":"diagnostic"},
+        "host_ip": {"name":"Host IP","device_class":None,"icon":"mdi:ip-network","state_topic":f"{DEVICE_SLUG}/host/ip","entity_category":"diagnostic"},
+        "sys_uptime": {"name":"System Uptime","unit_of_measurement":"s","device_class":"duration","icon":"mdi:timer-outline","state_topic":f"{DEVICE_SLUG}/system/sys_uptime","entity_category":"diagnostic","value_template":"{{ value | int }}","suggested_display_precision":0},
+        "program_uptime": {"name":"Program Uptime","unit_of_measurement":"s","device_class":"duration","icon":"mdi:timer-cog-outline","state_topic":f"{DEVICE_SLUG}/system/program_uptime","entity_category":"diagnostic","value_template":"{{ value | int }}","suggested_display_precision":0},
     }
 
     binary_sensors = {
-        "emmc_warning": {"name":"eMMC Warning","device_class":"problem","state_topic":f"{DEVICE_SLUG}/emmc/warn","payload_on":"ON","payload_off":"OFF"},
-        "emmc_critical": {"name":"eMMC Critical","device_class":"problem","state_topic":f"{DEVICE_SLUG}/emmc/crit","payload_on":"ON","payload_off":"OFF"},
+        "emmc_warning": {"name":"eMMC Warning","device_class":"problem","icon":"mdi:alert-outline","state_topic":f"{DEVICE_SLUG}/emmc/warn","payload_on":"ON","payload_off":"OFF"},
+        "emmc_critical": {"name":"eMMC Critical","device_class":"problem","icon":"mdi:alert-circle-outline","state_topic":f"{DEVICE_SLUG}/emmc/crit","payload_on":"ON","payload_off":"OFF"},
     }
 
     # Publish core sensors
@@ -173,7 +181,7 @@ def publish_discovery(client):
 
     # CPU governor
     topic = f"{BASE_TOPIC}/sensor/{DEVICE_SLUG}/cpu_governor/config"
-    client.publish(topic,json.dumps({"name":"CPU Governor","state_topic":f"{DEVICE_SLUG}/cpu/governor","unique_id":f"{UNIQUE_ID_PREFIX}_cpu_governor","device":device,"device_class":None,"availability_topic":LWT_TOPIC,"payload_available":LWT_PAYLOAD_ONLINE,"payload_not_available":LWT_PAYLOAD_OFFLINE}),retain=True)
+    client.publish(topic,json.dumps({"name":"CPU Governor","state_topic":f"{DEVICE_SLUG}/cpu/governor","unique_id":f"{UNIQUE_ID_PREFIX}_cpu_governor","device":device,"device_class":None,"icon":"mdi:tune","availability_topic":LWT_TOPIC,"payload_available":LWT_PAYLOAD_ONLINE,"payload_not_available":LWT_PAYLOAD_OFFLINE}),retain=True)
 
 # -------------------- MAIN LOOP --------------------
 def main():
@@ -196,6 +204,7 @@ def main():
         cpu_cur, cpu_min, cpu_max = get_cpu_freq()
         host_ip = get_host_ip()
         uptime_seconds = get_uptime_seconds()
+        program_uptime_seconds = get_program_uptime_seconds()
 
         # Publish metrics
         if life is not None:
@@ -210,7 +219,9 @@ def main():
         # Diagnostics
         client.publish(f"{DEVICE_SLUG}/host/ip", host_ip)
         if uptime_seconds is not None:
-            client.publish(f"{DEVICE_SLUG}/system/uptime", uptime_seconds)
+            client.publish(f"{DEVICE_SLUG}/system/sys_uptime", uptime_seconds)
+        if program_uptime_seconds is not None:
+            client.publish(f"{DEVICE_SLUG}/system/program_uptime", program_uptime_seconds)
 
         if cpu_temp is not None:
             client.publish(f"{DEVICE_SLUG}/cpu/temp", round(cpu_temp,1))
