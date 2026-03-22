@@ -1,14 +1,14 @@
-version: '3.8'
+version: "3.8"
 
 services:
   emmc-monitor:
-    build: .
+    image: ghcr.io/bennydiamond/emmc-monitor-mqtt/emmc-monitor:latest
     container_name: emmc-monitor
-    network_mode: host
     restart: unless-stopped
+    network_mode: host
+    privileged: true
     environment:
-      # Default values; can be overridden in Portainer stack UI
-      MQTT_HOST: "homeassistant.local"
-      MQTT_USER: "user"
-      MQTT_PASS: "pass"
-      DEVICE_NAME: "emmc-device-01"
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASS=${MQTT_PASS}
+      - DEVICE_NAME=${DEVICE_NAME}

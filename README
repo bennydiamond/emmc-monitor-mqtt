@@ -36,11 +36,10 @@ Lightweight Python MQTT monitor for eMMC/CPU/memory/storage on Linux devices. Pu
 
 ---
 
-## Docker Usage
+## Docker
 
-### Build Image
+Pull the latest image:
 
 ```bash
-docker build -t emmc-monitor .
-
+docker pull ghcr.io/bennydiamond/emmc-monitor-mqtt/emmc-monitor:latest
 
