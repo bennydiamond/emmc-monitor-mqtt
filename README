@@ -8,6 +8,7 @@ Lightweight Python MQTT monitor for eMMC/CPU/memory/storage on Linux devices. Pu
 
 - Reports eMMC lifetime and health flags  
 - Disk usage percentage  
+- Root filesystem used percentage and free space  
 - Memory usage (used/free)  
 - CPU temperature, governor, and min/max frequency  
 - Host IP (diagnostic entity)  
@@ -33,6 +34,7 @@ Lightweight Python MQTT monitor for eMMC/CPU/memory/storage on Linux devices. Pu
 | `MQTT_USER`   | None                       | MQTT username (optional) |
 | `MQTT_PASS`   | None                       | MQTT password (optional) |
 | `DEVICE_NAME` | `HA remote helper 01`      | Friendly device name |
+| `ROOT_FS_PATH` | `/`                       | Filesystem path to inspect for rootfs metrics; set to a bind-mounted host path in Docker |
 
 ---
 
@@ -42,4 +44,6 @@ Pull the latest image:
 
 ```bash
 docker pull ghcr.io/bennydiamond/emmc-monitor-mqtt/emmc-monitor:latest
+
+To report host root filesystem usage from inside Docker, bind-mount the host root filesystem read-only and set `ROOT_FS_PATH` to that mount point, for example `/hostfs`.
 

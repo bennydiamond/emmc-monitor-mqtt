@@ -12,3 +12,6 @@ services:
       - MQTT_USER=${MQTT_USER}
       - MQTT_PASS=${MQTT_PASS}
       - DEVICE_NAME=${DEVICE_NAME}
+      - ROOT_FS_PATH=/hostfs
+    volumes:
+      - /:/hostfs:ro
