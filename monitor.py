@@ -15,7 +15,7 @@ MQTT_USER = os.getenv("MQTT_USER")
 MQTT_PASS = os.getenv("MQTT_PASS")
 
 DEVICE_NAME = os.getenv("DEVICE_NAME", "HA remote helper 01")
-SCRIPT_VERSION = "1.1.0"
+SCRIPT_VERSION = "1.1.1"
 
 def slugify(name):
     return re.sub(r'[^a-zA-Z0-9_-]', '_', name)
@@ -122,6 +122,12 @@ def get_cpu_freq():
     except:
         return None, None, None
 
+def get_uptime_seconds():
+    try:
+        return int(time.time() - psutil.boot_time())
+    except:
+        return None
+
 # -------------------- HOME ASSISTANT DISCOVERY --------------------
 def publish_discovery(client):
     # Core sensors
@@ -139,6 +145,7 @@ def publish_discovery(client):
     # Diagnostic sensors
     diagnostics = {
         "host_ip": {"name":"Host IP","device_class":None,"state_topic":f"{DEVICE_SLUG}/host/ip","entity_category":"diagnostic"},
+        "uptime": {"name":"Uptime","unit_of_measurement":"s","device_class":"duration","state_topic":f"{DEVICE_SLUG}/system/uptime","entity_category":"diagnostic"},
     }
 
     binary_sensors = {
@@ -188,6 +195,7 @@ def main():
         cpu_gov = get_cpu_governor()
         cpu_cur, cpu_min, cpu_max = get_cpu_freq()
         host_ip = get_host_ip()
+        uptime_seconds = get_uptime_seconds()
 
         # Publish metrics
         if life is not None:
@@ -201,6 +209,8 @@ def main():
 
         # Diagnostics
         client.publish(f"{DEVICE_SLUG}/host/ip", host_ip)
+        if uptime_seconds is not None:
+            client.publish(f"{DEVICE_SLUG}/system/uptime", uptime_seconds)
 
         if cpu_temp is not None:
             client.publish(f"{DEVICE_SLUG}/cpu/temp", round(cpu_temp,1))
