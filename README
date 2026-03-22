@@ -1,0 +1,46 @@
+# emmc-monitor-mqtt
+
+Lightweight Python MQTT monitor for eMMC/CPU/memory/storage on Linux devices. Publishes Home Assistant discovery topics, LWT, and key system metrics with physical interface detection. Docker-ready for easy deployment via Portainer or docker-compose.
+
+---
+
+## Features
+
+- Reports eMMC lifetime and health flags  
+- Disk usage percentage  
+- Memory usage (used/free)  
+- CPU temperature, governor, and min/max frequency  
+- Host IP (diagnostic entity)  
+- Home Assistant auto-discovery compatible  
+- LWT (Last Will & Testament) support  
+- Lightweight Docker image for Linux devices  
+
+---
+
+## Requirements
+
+- Linux device with Python 3.11+  
+- MQTT broker accessible from the device (e.g., Mosquitto, Home Assistant)  
+
+---
+
+## Environment Variables
+
+| Variable      | Default                    | Description |
+|---------------|---------------------------|-------------|
+| `MQTT_HOST`   | `homeassistant.local`     | MQTT broker hostname/IP |
+| `MQTT_PORT`   | `1883`                     | MQTT broker port |
+| `MQTT_USER`   | None                       | MQTT username (optional) |
+| `MQTT_PASS`   | None                       | MQTT password (optional) |
+| `DEVICE_NAME` | `HA remote helper 01`      | Friendly device name |
+
+---
+
+## Docker Usage
+
+### Build Image
+
+```bash
+docker build -t emmc-monitor .
+
+

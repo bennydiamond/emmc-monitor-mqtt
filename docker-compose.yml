@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  emmc-monitor:
+    build: .
+    container_name: emmc-monitor
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      # Default values; can be overridden in Portainer stack UI
+      MQTT_HOST: "homeassistant.local"
+      MQTT_USER: "user"
+      MQTT_PASS: "pass"
+      DEVICE_NAME: "emmc-device-01"
