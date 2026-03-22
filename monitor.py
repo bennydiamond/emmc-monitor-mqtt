@@ -16,7 +16,7 @@ MQTT_PASS = os.getenv("MQTT_PASS")
 
 DEVICE_NAME = os.getenv("DEVICE_NAME", "HA remote helper 01")
 ROOT_FS_PATH = os.getenv("ROOT_FS_PATH", "/")
-SCRIPT_VERSION = "1.2.0"
+SCRIPT_VERSION = "1.2.1"
 
 def slugify(name):
     return re.sub(r'[^a-zA-Z0-9_-]', '_', name)
@@ -90,9 +90,6 @@ def get_emmc():
     except:
         return None, None
 
-def get_disk():
-    return psutil.disk_usage("/").percent
-
 def get_root_fs_usage(path=ROOT_FS_PATH):
     try:
         usage = psutil.disk_usage(path)
@@ -149,7 +146,6 @@ def publish_discovery(client):
     # Core sensors
     sensors = {
         "emmc_life": {"name":"eMMC Lifetime","unit_of_measurement":"%","device_class":None,"icon":"mdi:chip","state_topic":f"{DEVICE_SLUG}/emmc/life"},
-        "disk_used": {"name":"Disk Used","unit_of_measurement":"%","device_class":None,"state_class":"measurement","icon":"mdi:harddisk","state_topic":f"{DEVICE_SLUG}/disk/used"},
         "root_fs_used": {"name":"Root FS Used","unit_of_measurement":"%","device_class":None,"state_class":"measurement","icon":"mdi:harddisk","state_topic":f"{DEVICE_SLUG}/rootfs/used"},
         "root_fs_free": {"name":"Root FS Free","unit_of_measurement":"GiB","device_class":"data_size","icon":"mdi:harddisk","state_topic":f"{DEVICE_SLUG}/rootfs/free"},
         "mem_used": {"name":"Memory Used","unit_of_measurement":"%","device_class":None,"icon":"mdi:memory","state_topic":f"{DEVICE_SLUG}/mem/used"},
@@ -208,7 +204,6 @@ def main():
 
     while True:
         life, eol = get_emmc()
-        disk_used = get_disk()
         root_fs_used, root_fs_free = get_root_fs_usage()
         mem_used, mem_free = get_mem()
         cpu_temp = get_cpu_temp()
@@ -224,7 +219,6 @@ def main():
             client.publish(f"{DEVICE_SLUG}/emmc/warn", "ON" if life >= 70 or eol >= 2 else "OFF")
             client.publish(f"{DEVICE_SLUG}/emmc/crit", "ON" if life >= 90 or eol >= 3 else "OFF")
 
-        client.publish(f"{DEVICE_SLUG}/disk/used", disk_used)
         if root_fs_used is not None:
             client.publish(f"{DEVICE_SLUG}/rootfs/used", root_fs_used)
         if root_fs_free is not None:

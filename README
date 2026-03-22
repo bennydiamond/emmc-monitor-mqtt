@@ -7,7 +7,6 @@ Lightweight Python MQTT monitor for eMMC/CPU/memory/storage on Linux devices. Pu
 ## Features
 
 - Reports eMMC lifetime and health flags  
-- Disk usage percentage  
 - Root filesystem used percentage and free space  
 - Memory usage (used/free)  
 - CPU temperature, governor, and min/max frequency  
